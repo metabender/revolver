@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Six-Shot Revolver Animation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+
+        .scene {
+            position: relative;
+            width: 800px;
+            height: 600px;
+        }
+
+        .revolver {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 200px;
+        }
+
+        /* Main gun body */
+        .gun-body {
+            position: absolute;
+            width: 180px;
+            height: 80px;
+            background: linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 50%, #1a1a1a 100%);
+            border-radius: 8px;
+            left: 120px;
+            top: 60px;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.1), 0 4px 8px rgba(0,0,0,0.5);
+        }
+
+        /* Barrel */
+        .barrel {
+            position: absolute;
+            width: 160px;
+            height: 25px;
+            background: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%);
+            border-radius: 4px;
+            left: 0;
+            top: 75px;
+            box-shadow: inset 0 -2px 4px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .barrel::before {
+            content: '';
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: #0a0a0a;
+            border-radius: 50%;
+            left: -5px;
+            top: 5px;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.9);
+        }
+
+        /* Cylinder */
+        .cylinder {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 100%);
+            border-radius: 50%;
+            left: 140px;
+            top: 65px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 4px 8px rgba(0,0,0,0.4);
+            transform-origin: center;
+        }
+
+        .chamber {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #333;
+            border-radius: 50%;
+            border: 1px solid #555;
+            left: 50%;
+            top: 50%;
+        }
+
+        .chamber.spent {
+            background: #1a1a1a;
+            box-shadow: inset 0 0 4px rgba(139, 69, 19, 0.5);
+        }
+
+        .chamber:nth-child(1) { transform: translate(-50%, -50%) translateY(-25px); }
+        .chamber:nth-child(2) { transform: translate(-50%, -50%) rotate(60deg) translateY(-25px); }
+        .chamber:nth-child(3) { transform: translate(-50%, -50%) rotate(120deg) translateY(-25px); }
+        .chamber:nth-child(4) { transform: translate(-50%, -50%) rotate(180deg) translateY(-25px); }
+        .chamber:nth-child(5) { transform: translate(-50%, -50%) rotate(240deg) translateY(-25px); }
+        .chamber:nth-child(6) { transform: translate(-50%, -50%) rotate(300deg) translateY(-25px); }
+
+        /* Grip */
+        .grip {
+            position: absolute;
+            width: 60px;
+            height: 90px;
+            background: linear-gradient(135deg, #4a2c1c 0%, #2a1a0f 100%);
+            border-radius: 8px 8px 15px 20px;
+            left: 210px;
+            top: 80px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .grip::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 4px,
+                rgba(0,0,0,0.1) 4px,
+                rgba(0,0,0,0.1) 5px
+            );
+            border-radius: inherit;
+        }
+
+        /* Hammer */
+        .hammer {
+            position: absolute;
+            width: 20px;
+            height: 35px;
+            background: linear-gradient(135deg, #3a3a3a 0%, #1a1a1a 100%);
+            left: 230px;
+            top: 58px;
+            transform-origin: bottom center;
+            border-radius: 3px 3px 0 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        .hammer::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #2a2a2a;
+            border-radius: 50%;
+            top: -6px;
+            left: 4px;
+        }
+
+        /* Trigger */
+        .trigger {
+            position: absolute;
+            width: 18px;
+            height: 25px;
+            background: linear-gradient(135deg, #3a3a3a 0%, #1a1a1a 100%);
+            border-radius: 0 0 8px 8px;
+            left: 200px;
+            top: 115px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* Muzzle flash */
+        .muzzle-flash {
+            position: absolute;
+            left: -40px;
+            top: 67px;
+            width: 60px;
+            height: 60px;
+            opacity: 0;
+            transform-origin: right center;
+            pointer-events: none;
+        }
+
+        .flash-core {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #fff 0%, #ffeb3b 30%, #ff9800 60%, transparent 100%);
+            border-radius: 50%;
+            left: 0;
+            top: 15px;
+            filter: blur(2px);
+        }
+
+        .flash-burst {
+            position: absolute;
+            width: 0;
+            height: 0;
+            left: 15px;
+            top: 30px;
+        }
+
+        .flash-burst::before,
+        .flash-burst::after {
+            content: '';
+            position: absolute;
+            background: linear-gradient(90deg, #ffeb3b, #ff9800, transparent);
+        }
+
+        .flash-burst::before {
+            width: 45px;
+            height: 8px;
+            top: -4px;
+            left: 0;
+            clip-path: polygon(0 50%, 100% 0, 100% 100%);
+        }
+
+        .flash-burst::after {
+            width: 35px;
+            height: 12px;
+            top: -6px;
+            left: 0;
+            clip-path: polygon(0 30%, 100% 0, 100% 100%, 0 70%);
+        }
+
+        /* Smoke */
+        .smoke {
+            position: absolute;
+            left: -20px;
+            top: 75px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .smoke-puff {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, rgba(150,150,150,0.6) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(4px);
+        }
+
+        /* Casing */
+        .casing {
+            position: absolute;
+            width: 8px;
+            height: 16px;
+            background: linear-gradient(135deg, #d4af37 0%, #aa8c2d 50%, #8b7220 100%);
+            border-radius: 2px;
+            opacity: 0;
+            pointer-events: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .casing::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 30%;
+            background: rgba(139, 69, 19, 0.6);
+            bottom: 0;
+            border-radius: 0 0 2px 2px;
+        }
+
+        /* Counter */
+        .ammo-counter {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #00ff00;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff00;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Animations */
+        @keyframes recoil {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            10% { transform: translate(-48%, -52%) rotate(-3deg); }
+            30% { transform: translate(-52%, -50%) rotate(-1deg); }
+            60% { transform: translate(-50.5%, -50%) rotate(-0.3deg); }
+            100% { transform: translate(-50%, -50%) rotate(0deg); }
+        }
+
+        @keyframes hammerCock {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-45deg); }
+        }
+
+        @keyframes hammerRelease {
+            0% { transform: rotate(-45deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        @keyframes cylinderRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(60deg); }
+        }
+
+        @keyframes flash {
+            0% { opacity: 0; transform: scale(0.5); }
+            15% { opacity: 1; transform: scale(1.2); }
+            30% { opacity: 0.8; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.8); }
+        }
+
+        @keyframes smokeRise {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0) scale(0.5);
+            }
+            20% {
+                opacity: 0.6;
+                transform: translate(-10px, -5px) scale(0.8);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-40px, -30px) scale(1.5);
+            }
+        }
+
+        @keyframes casingEject {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) rotate(0deg);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(60px, -40px) rotate(360deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(100px, 60px) rotate(720deg);
+            }
+        }
+
+        @keyframes triggerPull {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(5px); }
+        }
+
+        .revolver.firing {
+            animation: recoil 0.5s cubic-bezier(0.2, 0.8, 0.3, 1);
+        }
+
+        .hammer.cocking {
+            animation: hammerCock 0.15s ease-out forwards;
+        }
+
+        .hammer.releasing {
+            animation: hammerRelease 0.08s ease-in forwards;
+        }
+
+        .cylinder.rotating {
+            animation: cylinderRotate 0.2s ease-out forwards;
+        }
+
+        .muzzle-flash.active {
+            animation: flash 0.15s ease-out;
+        }
+
+        .smoke.active .smoke-puff {
+            animation: smokeRise 1s ease-out forwards;
+        }
+
+        .casing.ejecting {
+            animation: casingEject 1.2s cubic-bezier(0.2, 0.5, 0.8, 1) forwards;
+        }
+
+        .trigger.pulling {
+            animation: triggerPull 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="scene">
+        <div class="ammo-counter">
+            <span id="rounds">6</span> / 6
+        </div>
+
+        <div class="revolver">
+            <div class="barrel"></div>
+
+            <div class="cylinder" id="cylinder">
+                <div class="chamber"></div>
+                <div class="chamber"></div>
+                <div class="chamber"></div>
+                <div class="chamber"></div>
+                <div class="chamber"></div>
+                <div class="chamber"></div>
+            </div>
+
+            <div class="gun-body"></div>
+            <div class="grip"></div>
+            <div class="hammer" id="hammer"></div>
+            <div class="trigger" id="trigger"></div>
+
+            <div class="muzzle-flash" id="muzzleFlash">
+                <div class="flash-core"></div>
+                <div class="flash-burst"></div>
+            </div>
+
+            <div class="smoke" id="smoke">
+                <div class="smoke-puff" style="left: 0px;"></div>
+                <div class="smoke-puff" style="left: 8px; top: -5px;"></div>
+                <div class="smoke-puff" style="left: -8px; top: 5px;"></div>
+            </div>
+
+            <div id="casings"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentRound = 0;
+        const totalRounds = 6;
+        let isFiring = false;
+        let currentRotation = 0;
+
+        const revolver = document.querySelector('.revolver');
+        const hammer = document.getElementById('hammer');
+        const trigger = document.getElementById('trigger');
+        const cylinder = document.getElementById('cylinder');
+        const muzzleFlash = document.getElementById('muzzleFlash');
+        const smoke = document.getElementById('smoke');
+        const casingsContainer = document.getElementById('casings');
+        const roundsDisplay = document.getElementById('rounds');
+        const chambers = document.querySelectorAll('.chamber');
+
+        function createCasing() {
+            const casing = document.createElement('div');
+            casing.className = 'casing';
+            casing.style.left = '180px';
+            casing.style.top = '50px';
+            casingsContainer.appendChild(casing);
+
+            setTimeout(() => {
+                casing.classList.add('ejecting');
+            }, 10);
+
+            setTimeout(() => {
+                casing.remove();
+            }, 1300);
+        }
+
+        function fireShot() {
+            if (isFiring || currentRound >= totalRounds) return;
+
+            isFiring = true;
+
+            // Update ammo counter
+            roundsDisplay.textContent = totalRounds - currentRound - 1;
+
+            // Cock hammer
+            hammer.classList.add('cocking');
+
+            setTimeout(() => {
+                hammer.classList.remove('cocking');
+
+                // Pull trigger
+                trigger.classList.add('pulling');
+
+                setTimeout(() => {
+                    // Release hammer and fire
+                    hammer.classList.add('releasing');
+                    revolver.classList.add('firing');
+                    muzzleFlash.classList.add('active');
+                    smoke.classList.add('active');
+
+                    // Mark chamber as spent
+                    chambers[currentRound].classList.add('spent');
+
+                    // Eject casing
+                    createCasing();
+
+                    setTimeout(() => {
+                        hammer.classList.remove('releasing');
+                        revolver.classList.remove('firing');
+                        muzzleFlash.classList.remove('active');
+                        trigger.classList.remove('pulling');
+
+                        setTimeout(() => {
+                            smoke.classList.remove('active');
+                        }, 100);
+
+                        // Rotate cylinder
+                        currentRound++;
+                        if (currentRound < totalRounds) {
+                            currentRotation += 60;
+                            cylinder.style.transform = `rotate(${currentRotation}deg)`;
+                            cylinder.classList.add('rotating');
+
+                            setTimeout(() => {
+                                cylinder.classList.remove('rotating');
+                                isFiring = false;
+
+                                // Auto-fire next round after delay
+                                setTimeout(() => {
+                                    fireShot();
+                                }, 400);
+                            }, 200);
+                        } else {
+                            isFiring = false;
+                            console.log('Empty! All rounds fired.');
+                        }
+                    }, 80);
+                }, 100);
+            }, 150);
+        }
+
+        // Start firing sequence automatically after page load
+        setTimeout(() => {
+            fireShot();
+        }, 500);
+
+        // Allow manual restart by clicking on the revolver after completion
+        revolver.addEventListener('click', () => {
+            if (currentRound >= totalRounds && !isFiring) {
+                // Reset
+                currentRound = 0;
+                currentRotation = 0;
+                cylinder.style.transform = 'rotate(0deg)';
+                chambers.forEach(chamber => chamber.classList.remove('spent'));
+                roundsDisplay.textContent = totalRounds;
+
+                setTimeout(() => {
+                    fireShot();
+                }, 300);
+            }
+        });
+    </script>
+</body>
+</html>
