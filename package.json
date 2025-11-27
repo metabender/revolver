@@ -1,9 +1,5 @@
 {
   "name": "revolver-animation",
   "version": "1.0.0",
-  "description": "Six-shot revolver firing animation",
-  "scripts": {
-    "dev": "python3 -m http.server 8000",
-    "build": "echo 'Static site - no build needed'"
-  }
+  "description": "Six-shot revolver firing animation"
 }
